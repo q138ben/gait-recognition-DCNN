@@ -20,7 +20,7 @@ import pandas as pd
 from make_matrix import make_matrix_6by9
 from phase_reorder_p5_CNN import phase_reorder
 from barchart_accuracy_p5_CNN import bar_accuracy 
-
+from plot_roc_CNN import plot_roc
 
 
  #function to draw confusion matrix
@@ -157,3 +157,4 @@ CNN_acc = np.array([score[1],accuracy_score(phase_1_test, phase_1_pred),
 
 
 bar_accuracy(CNN_acc)
+plot_roc(model,nb_classes,X_test,Y_test)
