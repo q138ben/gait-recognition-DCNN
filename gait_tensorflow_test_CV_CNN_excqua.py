@@ -3,64 +3,34 @@ from __future__ import print_function
 import numpy as np
 np.random.seed(1337)  # for reproducibility
 
-from keras.datasets import mnist
+
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras import backend as K
-from sklearn.model_selection import KFold
-
-import tensorflow as tf
-from make_matrix import make_matrix_6by9
 from numpy import genfromtxt
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-
-from sklearn.utils import shuffle
 import numpy as np
-from phase_reorder_p5_CNN import phase_reorder
 from sklearn.metrics import accuracy_score
-
-
-from barchart_accuracy_p5_CNN import bar_accuracy 
 from sklearn.metrics import classification_report, confusion_matrix
 import seaborn as sns
 import pandas as pd
-
-#X_1 = genfromtxt('feature_5p_longbin_4.0kmh_X.txt', delimiter='');
-#y_1 = genfromtxt('feature_5p_longbin_4.0kmh_Y.txt', delimiter='');
-#
-#X_2 = genfromtxt('feature_5p_longbin_4.5kmh_X.txt', delimiter='');
-#y_2 = genfromtxt('feature_5p_longbin_4.5kmh_Y.txt', delimiter='');
-#
-#X_3 = genfromtxt('feature_5p_longbin_5.0kmh_X.txt', delimiter='');
-#y_3 = genfromtxt('feature_5p_longbin_5.0kmh_Y.txt', delimiter='');
-#
-#
-#X = np.concatenate((X_1,X_2,X_3))
-#y = np.concatenate((y_1,y_2,y_3))
+from make_matrix import make_matrix_6by9
+from phase_reorder_p5_CNN import phase_reorder
+from barchart_accuracy_p5_CNN import bar_accuracy 
 
 
 
-#X = genfromtxt('feature_5p_longbin_5.0kmh_normafter_excqua_X.txt', delimiter='');
-#y = genfromtxt('feature_5p_longbin_5.0kmh_normafter_excqua_Y.txt', delimiter='');
-#
-#
-#
-#X = make_matrix_6by9(X)
-#y = np.subtract(y,1)
-#X_train, X_test, y_train, y_test = train_test_split(X, y,test_size= 0.3,random_state=0)
+ #function to draw confusion matrix
+def draw_confusion_matrix(true,preds):
+    conf_matx = confusion_matrix(true, preds)
+    sns.heatmap(conf_matx, annot=True,annot_kws={"size": 12},fmt='g', cbar=False, cmap="viridis")
+    plt.show()
+    #return conf_matx  
 
 
-#X = genfromtxt('feature_5p_longbin_5.0kmh_normafter_excqua_X.txt', delimiter='');
-#y = genfromtxt('feature_5p_longbin_5.0kmh_normafter_excqua_Y.txt', delimiter='');
-#X_train = make_matrix_6by9(X)
-#y_train = np.subtract(y,1)
-#X = genfromtxt('feature_5p_ben_normafter_excqua_X.txt', delimiter='');
-#y = genfromtxt('feature_5p_ben_normafter_excqua_Y.txt', delimiter='');
-#X_test = make_matrix_6by9(X)
-#y_test = np.subtract(y,1)
 
 
 
@@ -82,17 +52,6 @@ y = np.concatenate((y_1,y_2,y_3,y_4))
 X = make_matrix_6by9(X)
 y = np.subtract(y,1)
 X_train, X_test, y_train, y_test = train_test_split(X, y,test_size= 0.3,random_state=0)
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -157,32 +116,17 @@ model.compile(loss='binary_crossentropy',
 
 model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
           verbose=1)
-model.evaluate(X_test, Y_test, verbose=0)
 
 
-#function for converting predictions to labels
-def prep_submissions(preds_array, file_name='abc.csv'):
-    preds_df = pd.DataFrame(preds_array)
-    predicted_labels = preds_df.idxmax(axis=1) #convert back one hot encoding to categorical variabless
-    return predicted_labels
-    '''
-    ### prepare submissions in case you need to submit
-    submission = pd.read_csv("test.csv")
-    submission['label'] = predicted_labels
-    submission.to_csv(file_name, index=False)
-    print(pd.read_csv(file_name).head())
-   '''
- #function to draw confusion matrix
-def draw_confusion_matrix(true,preds):
-    conf_matx = confusion_matrix(true, preds)
-    sns.heatmap(conf_matx, annot=True,annot_kws={"size": 12},fmt='g', cbar=False, cmap="viridis")
-    plt.show()
-    #return conf_matx  
+
 
 y_pred= model.predict_classes(X_test)
-#y_preds_labels = prep_submissions(y_pred)
 
+# convert class vectors to binary class matrices
 y_preds_labels = np_utils.to_categorical(y_pred, nb_classes)
+
+
+
 print(classification_report(Y_test, y_preds_labels))
 
 draw_confusion_matrix(Y_test.argmax(axis=1), y_preds_labels.argmax(axis=1))
@@ -191,36 +135,25 @@ draw_confusion_matrix(Y_test.argmax(axis=1), y_preds_labels.argmax(axis=1))
 
 
 
+score = model.evaluate(X_test, Y_test, verbose=0)
 
 
 
 
+(phase_1_test, phase_2_test, phase_3_test, phase_4_test,phase_5_test,phase_1_pred,phase_2_pred,phase_3_pred,phase_4_pred,phase_5_pred) = \
+phase_reorder(y_test,y_pred)
 
 
+print("\tOverall_Accuracy: %1.3f" % score[1])
+print("\tLR_Accuracy: %1.3f" % accuracy_score(phase_1_test, phase_1_pred))
+print("\tMS_Accuracy: %1.3f" % accuracy_score(phase_2_test, phase_2_pred))
+print("\tTS_Accuracy: %1.3f" % accuracy_score(phase_3_test, phase_3_pred))
+print("\tPSw_Accuracy: %1.3f" % accuracy_score(phase_4_test, phase_4_pred))
+print("\tSw_Accuracy: %1.3f" % accuracy_score(phase_5_test, phase_5_pred))
 
-#model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
-#          verbose=1, validation_data=(X_test, Y_test))
-#score = model.evaluate(X_test, Y_test, verbose=0)
-#print('Test score:', score[0])
-#print('Test accuracy:', score[1])
-#
-#
-#
-#y_pred= model.predict_classes(X_test)
-#
-#
-#(phase_1_test, phase_2_test, phase_3_test, phase_4_test,phase_5_test,phase_1_pred,phase_2_pred,phase_3_pred,phase_4_pred,phase_5_pred) = \
-#phase_reorder(y_test,y_pred)
-#
-#print("\tLR_Accuracy: %1.3f" % accuracy_score(phase_1_test, phase_1_pred))
-#print("\tMS_Accuracy: %1.3f" % accuracy_score(phase_2_test, phase_2_pred))
-#print("\tTS_Accuracy: %1.3f" % accuracy_score(phase_3_test, phase_3_pred))
-#print("\tPSw_Accuracy: %1.3f" % accuracy_score(phase_4_test, phase_4_pred))
-#print("\tSw_Accuracy: %1.3f" % accuracy_score(phase_5_test, phase_5_pred))
-#
-#CNN_acc = np.array([score[1],accuracy_score(phase_1_test, phase_1_pred),
-#                            accuracy_score(phase_2_test, phase_2_pred),accuracy_score(phase_3_test, phase_3_pred),
-#                            accuracy_score(phase_4_test, phase_4_pred),accuracy_score(phase_5_test, phase_5_pred)])
-#
-#
-#bar_accuracy(CNN_acc)
+CNN_acc = np.array([score[1],accuracy_score(phase_1_test, phase_1_pred),
+                            accuracy_score(phase_2_test, phase_2_pred),accuracy_score(phase_3_test, phase_3_pred),
+                            accuracy_score(phase_4_test, phase_4_pred),accuracy_score(phase_5_test, phase_5_pred)])
+
+
+bar_accuracy(CNN_acc)
