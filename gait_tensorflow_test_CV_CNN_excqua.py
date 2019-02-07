@@ -99,7 +99,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,test_size= 0.3,random_s
 
 batch_size = 200
 nb_classes = 5
-nb_epoch = 50
+nb_epoch = 5
 
 # input image dimensions
 img_rows, img_cols = 6, 9
