@@ -103,7 +103,7 @@ model.add(Dropout(0.5))
 model.add(Dense(nb_classes))
 model.add(Activation('softmax'))
 
-model.compile(loss='binary_crossentropy',
+model.compile(loss='categorical_crossentropy',
               optimizer='Nadam',
               metrics=['accuracy'])
 
@@ -111,7 +111,7 @@ model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
           verbose=1)
 
 
-
+score = model.evaluate(X_test, Y_test, verbose=0)
 
 y_pred= model.predict_classes(X_test)
 
@@ -154,7 +154,7 @@ plt.show()
 
 
 
-score = model.evaluate(X_test, Y_test, verbose=0)
+#score = model.evaluate(X_test, Y_test, verbose=0)
 
 (phase_1_test, phase_2_test, phase_3_test, phase_4_test,phase_5_test,phase_1_pred,phase_2_pred,phase_3_pred,phase_4_pred,phase_5_pred) = \
 phase_reorder(y_test,y_pred)
