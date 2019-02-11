@@ -132,15 +132,18 @@ cnf_matrix = confusion_matrix(y_test, y_pred)
 np.set_printoptions(precision=2)
 
 # Plot non-normalized confusion matrix
+
 plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=class_names,
                       title='Confusion matrix, without normalization')
+
+plt.savefig('Confusion matrix, without normalization',dpi = 1200)
 
 # Plot normalized confusion matrix
 plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,
                       title='Normalized confusion matrix')
-
+plt.savefig('Normalized confusion matrix',dpi = 1200)
 plt.show()
 
 
@@ -154,7 +157,7 @@ plt.show()
 
 
 
-#score = model.evaluate(X_test, Y_test, verbose=0)
+
 
 (phase_1_test, phase_2_test, phase_3_test, phase_4_test,phase_5_test,phase_1_pred,phase_2_pred,phase_3_pred,phase_4_pred,phase_5_pred) = \
 phase_reorder(y_test,y_pred)
