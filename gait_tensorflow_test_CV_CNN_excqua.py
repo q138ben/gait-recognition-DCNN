@@ -21,14 +21,7 @@ from make_matrix import make_matrix_6by9
 from phase_reorder_p5_CNN import phase_reorder
 from barchart_accuracy_p5_CNN import bar_accuracy 
 from plot_roc_CNN import plot_roc
-
-
- #function to draw confusion matrix
-def draw_confusion_matrix(true,preds):
-    conf_matx = confusion_matrix(true, preds)
-    sns.heatmap(conf_matx, annot=True,annot_kws={"size": 12},fmt='g', cbar=False, cmap="viridis")
-    plt.show()
-    #return conf_matx  
+from plot_confusion_matrix import plot_confusion_matrix
 
 
 
@@ -54,11 +47,11 @@ y = np.subtract(y,1)
 X_train, X_test, y_train, y_test = train_test_split(X, y,test_size= 0.3,random_state=0)
 
 
-
+class_names = np.array(['LR','MS','TS','PSw','Sw'])
 
 batch_size = 200
 nb_classes = 5
-nb_epoch = 5
+nb_epoch = 10
 
 # input image dimensions
 img_rows, img_cols = 6, 9
@@ -125,20 +118,43 @@ y_pred= model.predict_classes(X_test)
 # convert class vectors to binary class matrices
 y_preds_labels = np_utils.to_categorical(y_pred, nb_classes)
 
-
-
+# print classification report
 print(classification_report(Y_test, y_preds_labels))
 
-draw_confusion_matrix(Y_test.argmax(axis=1), y_preds_labels.argmax(axis=1))
+
+
+
+
+
+# Compute confusion matrix
+
+cnf_matrix = confusion_matrix(y_test, y_pred)
+np.set_printoptions(precision=2)
+
+# Plot non-normalized confusion matrix
+plt.figure()
+plot_confusion_matrix(cnf_matrix, classes=class_names,
+                      title='Confusion matrix, without normalization')
+
+# Plot normalized confusion matrix
+plt.figure()
+plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,
+                      title='Normalized confusion matrix')
+
+plt.show()
+
+
+
+
+
+
+
 
 
 
 
 
 score = model.evaluate(X_test, Y_test, verbose=0)
-
-
-
 
 (phase_1_test, phase_2_test, phase_3_test, phase_4_test,phase_5_test,phase_1_pred,phase_2_pred,phase_3_pred,phase_4_pred,phase_5_pred) = \
 phase_reorder(y_test,y_pred)
