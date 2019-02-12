@@ -2,11 +2,6 @@
 from __future__ import print_function
 import numpy as np
 np.random.seed(1337)  # for reproducibility
-
-
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras import backend as K
 from numpy import genfromtxt
@@ -15,15 +10,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report, confusion_matrix
-import seaborn as sns
-import pandas as pd
 from make_matrix import make_matrix_6by9
-from phase_reorder_p5_CNN import phase_reorder
-from barchart_accuracy_p5_CNN import bar_accuracy 
-from plot_roc_CNN import plot_roc
-from plot_confusion_matrix import plot_confusion_matrix
-
 from DNM import CNN, LSTM_model
+from plot import phase_reorder,bar_accuracy,plot_roc,plot_confusion_matrix,plot_loss_and_acc
 
 
 
@@ -80,7 +69,7 @@ Y_test = np_utils.to_categorical(y_test, nb_classes)
 
 
 
-model = CNN(X_train,Y_train)
+model,history  = CNN(X_train,Y_train)
 
 score = model.evaluate(X_test, Y_test, verbose=0)
 
@@ -100,6 +89,8 @@ print(classification_report(Y_test, y_preds_labels))
 # Compute confusion matrix
 
 cnf_matrix = confusion_matrix(y_test, y_pred)
+
+cnf_matrix_norm = cnf_matrix.astype('float') / cnf_matrix.sum(axis=1)[:, np.newaxis]
 np.set_printoptions(precision=2)
 
 # Plot non-normalized confusion matrix
@@ -120,26 +111,15 @@ plt.show()
 
 
 
+#plot bar_accuracy
 
-
-
-
-
-(phase_1_test, phase_2_test, phase_3_test, phase_4_test,phase_5_test,phase_1_pred,phase_2_pred,phase_3_pred,phase_4_pred,phase_5_pred) = \
-phase_reorder(y_test,y_pred)
-
-
-print("\tOverall_Accuracy: %1.3f" % score[1])
-print("\tLR_Accuracy: %1.3f" % accuracy_score(phase_1_test, phase_1_pred))
-print("\tMS_Accuracy: %1.3f" % accuracy_score(phase_2_test, phase_2_pred))
-print("\tTS_Accuracy: %1.3f" % accuracy_score(phase_3_test, phase_3_pred))
-print("\tPSw_Accuracy: %1.3f" % accuracy_score(phase_4_test, phase_4_pred))
-print("\tSw_Accuracy: %1.3f" % accuracy_score(phase_5_test, phase_5_pred))
-
-CNN_acc = np.array([score[1],accuracy_score(phase_1_test, phase_1_pred),
-                            accuracy_score(phase_2_test, phase_2_pred),accuracy_score(phase_3_test, phase_3_pred),
-                            accuracy_score(phase_4_test, phase_4_pred),accuracy_score(phase_5_test, phase_5_pred)])
-
-
+CNN_acc = np.array([score[1],cnf_matrix_norm[0,0],cnf_matrix_norm[1,1],cnf_matrix_norm[2,2],cnf_matrix_norm[3,3],cnf_matrix_norm[4,4]])
 bar_accuracy(CNN_acc)
+
+# plot roc curve
+
 plot_roc(model,nb_classes,X_test,Y_test)
+
+#plot loss and accuracy on training and validation data
+
+plot_loss_and_acc(history)

@@ -18,16 +18,16 @@ def CNN(X_train,Y_train):
     
     batch_size = 200
     nb_classes = 5
-    nb_epoch = 30
+    nb_epoch = 20
     
     # input image dimensions
     img_rows, img_cols = 6, 9
     # number of convolutional filters to use
-    nb_filters = 16
+    nb_filters = 8
     # size of pooling area for max pooling
     pool_size = (2, 2)
     # convolution kernel size
-    kernel_size = (2, 2)
+    kernel_size = (3, 3)
     
     
     model = Sequential()
@@ -53,7 +53,7 @@ def CNN(X_train,Y_train):
 
 
     model.add(Flatten())
-#    model.add(Dense(512))
+    model.add(Dense(512))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes))
@@ -62,9 +62,9 @@ def CNN(X_train,Y_train):
     model.compile(loss='categorical_crossentropy',
                   optimizer='Nadam',
                   metrics=['accuracy'])
-    model.fit(X_train, Y_train, batch_size=batch_size, nb_epoch=nb_epoch,
-          verbose=1)
-    return model
+    history = model.fit(X_train, Y_train,validation_split=0.3, batch_size=batch_size, nb_epoch=nb_epoch,verbose=1)
+
+    return model, history
 
 
 def LSTM_model(X_train,Y_train):
