@@ -14,12 +14,16 @@ from keras.layers import LSTM
 
 from keras.layers import Conv2D
 
+from keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
+from keras.models import load_model
+
 
 def CNN(X_train,Y_train,X_test,Y_test):
     
     batch_size = 32
     nb_classes = 5
-    nb_epoch = 20
+    nb_epoch = 50
     
     # input image dimensions
     img_rows, img_cols = 7,9
@@ -65,8 +69,16 @@ def CNN(X_train,Y_train,X_test,Y_test):
     model.compile(loss='categorical_crossentropy',
                   optimizer= opt,
                   metrics=['accuracy'])
-    history = model.fit(X_train, Y_train,validation_data=(X_test, Y_test), batch_size=batch_size, nb_epoch=nb_epoch,verbose=1)
-
+    
+    # simple early stopping
+    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1,patience = 5)
+    mc = ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
+    
+    
+    
+    history = model.fit(X_train, Y_train,validation_data=(X_test, Y_test), batch_size=batch_size, nb_epoch=nb_epoch,verbose=0,callbacks=[es,mc])
+    model = load_model('best_model.h5')
+    
     return model, history
 
 
