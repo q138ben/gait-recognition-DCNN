@@ -6,6 +6,7 @@ Created on Mon Feb 11 16:27:48 2019
 """
 
 from keras.models import Sequential
+from keras import optimizers
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.layers import Embedding
@@ -14,26 +15,27 @@ from keras.layers import LSTM
 from keras.layers import Conv2D
 
 
-def CNN(X_train,Y_train):
+def CNN(X_train,Y_train,X_test,Y_test):
     
-    batch_size = 200
+    batch_size = 32
     nb_classes = 5
     nb_epoch = 20
     
     # input image dimensions
-    img_rows, img_cols = 6, 9
+    img_rows, img_cols = 7,9
     # number of convolutional filters to use
     nb_filters = 8
-    # size of pooling area for max pooling
+    # size of pooling area for max pooling,default (2,2)
     pool_size = (2, 2)
-    # convolution kernel size
+    # convolution kernel size, default (3,3)
     kernel_size = (3, 3)
+    
     
     
     model = Sequential()
     
 
-
+#
     model.add(Conv2D(nb_filters, kernel_size,input_shape=(img_rows, img_cols, 1),padding='same'))
     model.add(Activation('relu'))
     model.add(Conv2D(nb_filters, kernel_size))
@@ -41,13 +43,12 @@ def CNN(X_train,Y_train):
     model.add(MaxPooling2D(pool_size=pool_size))
     model.add(Dropout(0.25))
 
-#    model.add(Conv2D(2*nb_filters, kernel_size,padding = 'same'))
-#    model.add(Activation('relu'))
-#    model.add(Conv2D(2*nb_filters, kernel_size,padding = 'same'))
-#    model.add(Activation('relu'))
-#    model.add(MaxPooling2D(pool_size=pool_size))
-#    model.add(Dropout(0.25))
-
+    model.add(Conv2D(2*nb_filters, kernel_size,padding = 'same'))
+    model.add(Activation('relu'))
+    model.add(Conv2D(2*nb_filters, kernel_size,padding = 'same'))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=pool_size))
+    model.add(Dropout(0.25))
 
 
 
@@ -59,10 +60,12 @@ def CNN(X_train,Y_train):
     model.add(Dense(nb_classes))
     model.add(Activation('softmax'))
     
+    
+    opt = optimizers.Nadam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, schedule_decay=0.004)
     model.compile(loss='categorical_crossentropy',
-                  optimizer='Nadam',
+                  optimizer= opt,
                   metrics=['accuracy'])
-    history = model.fit(X_train, Y_train,validation_split=0.3, batch_size=batch_size, nb_epoch=nb_epoch,verbose=1)
+    history = model.fit(X_train, Y_train,validation_data=(X_test, Y_test), batch_size=batch_size, nb_epoch=nb_epoch,verbose=1)
 
     return model, history
 
