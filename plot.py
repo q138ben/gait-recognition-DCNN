@@ -15,6 +15,10 @@ from sklearn.metrics import roc_curve, auc
 
 from scipy import interp
 import itertools
+import matplotlib.style as style
+from matplotlib.ticker import MaxNLocator
+import matplotlib.image as mpimg
+
 
 
 
@@ -39,7 +43,7 @@ def plot_confusion_matrix(cm, classes,
     plt.colorbar()
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
+    plt.yticks(tick_marks, classes,rotation=45)
 
     fmt = '.2f' if normalize else 'd'
     thresh = cm.max() / 2.
@@ -48,8 +52,8 @@ def plot_confusion_matrix(cm, classes,
                  horizontalalignment="center",
                  color="white" if cm[i, j] > thresh else "black")
 
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
+    plt.ylabel('True phase')
+    plt.xlabel('Predicted phase')
     plt.tight_layout()
 
 
@@ -133,38 +137,61 @@ def plot_roc(model,n_classes,X_test,y_test):
 
 def plot_loss_and_acc(history):
     
+    style.use('ggplot')
+    
     # summarize history for accuracy
-    plt.plot(history.history['acc'])
-    plt.plot(history.history['val_acc'])
-    plt.title('DCNN Model Accuracy')
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epoch')
-    plt.legend(['Training data', 'Validation data'], loc='best')
-    plt.show()
-    # summarize history for loss
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
-    plt.title('DCNN Model Loss')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend(['Training data', 'Validation data'], loc='best')
-    plt.show()
+#    plt.plot(history.history['acc'])
+#    plt.plot(history.history['val_acc'])
+#    plt.title('DCNN Model Accuracy')
+#    plt.ylabel('Accuracy')
+#    plt.xlabel('Epoch')
+#    plt.legend(['Training data', 'Validation data'], loc='best')
+#    plt.show()
+#    # summarize history for loss
+#    plt.plot(history.history['loss'])
+#    plt.plot(history.history['val_loss'])
+#    plt.title('DCNN Model Loss')
+#    plt.ylabel('Loss')
+#    plt.xlabel('Epoch')
+#    plt.legend(['Training data', 'Validation data'], loc='best')
+#    plt.grid()
+#    plt.show()
     
-
-
-def bar_accuracy(CNN):
+    fig,(ax1,ax2)= plt.subplots(2,1,figsize=(4,5))
+    ax1.plot(history.history['acc'],label='Traing data')
+    ax1.plot(history.history['val_acc'],label='Test data')
+    ax1.legend(loc='best')
+    ax1.set_ylabel('Accuracy')
+#    ax1.get_shared_x_axes().join(ax1, ax2)
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax1.set_xticklabels([])
+#    ax1.xaxis.set_major_formatter(plt.NullFormatter())
+#    ax1.set_legend(['Training data', 'Validation data'], loc='best')
     
+    ax2.plot(history.history['loss'],label='Traing data')
+    ax2.plot(history.history['val_loss'],label='Test data')
+    ax2.legend(loc='best')
+    ax2.set_ylabel('Loss')
+    ax2.set_xlabel('Epoch')
+#    ax2.set_legend(['Training data', 'Validation data'], loc='best')
 
+    ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
+    plt.tight_layout()
+
+def bar_accuracy(CNN,std):
+    style.use('ggplot')
+    
     ind = np.arange(len(CNN))  # the x locations for the groups
     width = 0.5  # the width of the bars
     
+#    std=[0.01,0.02,0.02,0.02,0.02,0]
     fig, ax = plt.subplots()
-    ax.bar(ind, CNN, width, color='SkyBlue', label='CNN')
-
+    ax.bar(ind, CNN, width,yerr=std,color='SkyBlue', align='center',alpha=0.8, ecolor='black',capsize=2)
+    
     
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel('Acuracy',fontsize=15)
-    ax.set_title('CNN recognition accuracy on 5 gait phases',fontsize=15)
+#    ax.set_title('CNN recognition accuracy on 5 gait phases',fontsize=15)
     ax.set_ylim(ymin=0.7)
     ax.set_xticks(ind)
     ax.set_xticklabels(('Overall', 'LR', 'MS', 'TS', 'PSw','Sw'))
@@ -172,7 +199,7 @@ def bar_accuracy(CNN):
 #    ax.legend(loc=0,fontsize=15)
     
 #    ax.set_ylim(0,1.2)
-       
+    plt.savefig('gunnar_bar.png',dpi=400)   
     plt.show()
 
 def phase_reorder(data,y_pred):
@@ -212,4 +239,39 @@ def phase_reorder(data,y_pred):
         
     return phase_1, phase_2, phase_3, phase_4,phase_5,phase_1_pred,phase_2_pred,phase_3_pred,phase_4_pred,phase_5_pred
         
-        
+
+def combineImage():
+    img1 = mpimg.imread('hui_bar.png')
+    img2 = mpimg.imread('marcus_bar.png')
+    img3 = mpimg.imread('gunnar_bar.png')
+    img4 = mpimg.imread('yanzu_bar.png')
+    img5 = mpimg.imread('yixing_bar.png')
+    img6 = mpimg.imread('snorri_bar.png')
+    
+    fig,[[ax1,ax2],[ax3,ax4],[ax5,ax6]] = plt.subplots(3,2)
+    
+    ax1.imshow(img1)
+    ax2.imshow(img2)
+    ax3.imshow(img3)
+    ax4.imshow(img4)
+    ax5.imshow(img5)
+    ax6.imshow(img6)
+    
+    ax1.axis('off')
+    ax2.axis('off')
+    ax3.axis('off')
+    ax4.axis('off')
+    ax5.axis('off')
+    ax6.axis('off')
+    
+    plt.savefig('all_bar',dpi=400)
+    
+    plt.tight_layout()
+
+    plt.show()
+
+
+
+#bar_accuracy(mean,std)
+
+#combineImage()

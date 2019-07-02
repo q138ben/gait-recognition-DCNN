@@ -1,5 +1,6 @@
-
 from __future__ import print_function
+
+
 import numpy as np
 np.random.seed(1337)  # for reproducibility
 from keras.utils import np_utils
@@ -14,59 +15,43 @@ from make_matrix import make_matrix_6by9, make_matrix_7by9
 from DNM import CNN, LSTM_model
 from plot import phase_reorder,bar_accuracy,plot_roc,plot_confusion_matrix,plot_loss_and_acc
 import time
+from fetchDataset import fetchDataset
+from keras.models import load_model
 
-## Subject snorri
+import os
+#os.chdir("C:\\Users\\binbi\\Desktop\\data_aquisition\\yazu_05_08")
+#os.chdir('C:\\Users\\binbi\\Desktop\\data_aquisition\\yixing')
+#os.chdir("D:\\data_aquisition\\snorri")
+#os.chdir("D:\\data_aquisition\\gunnar")
 
-#X_1 = genfromtxt('snorri_4.1_EmgRectifyLowPass6_IMULowPass6_X.txt', delimiter='');
-#y_1 = genfromtxt('snorri_4.1_EmgRectifyLowPass6_IMULowPass6_Y.txt', delimiter='');
 #
-#X_2 = genfromtxt('snorri_4.8_EmgRectifyLowPass6_IMULowPass6_X.txt', delimiter='');
-#y_2 = genfromtxt('snorri_4.8_EmgRectifyLowPass6_IMULowPass6_Y.txt', delimiter='');
+#X1,y1= fetchDataset('gunnar')
+#X2,y2= fetchDataset('hui')
+#X3,y3= fetchDataset('Marcus')
+#X4,y4= fetchDataset('yanzu')
+#X5,y5= fetchDataset('yixing')
+#X6,y6= fetchDataset('snorri')
 #
-#X_3 = genfromtxt('snorri_5.4_EmgRectifyLowPass6_IMULowPass6_X.txt', delimiter='');
-#y_3 = genfromtxt('snorri_5.4_EmgRectifyLowPass6_IMULowPass6_Y.txt', delimiter='');
 #
-#X_4 = genfromtxt('snorri_6.0_EmgRectifyLowPass6_IMULowPass6_X.txt', delimiter='');
-#y_4 = genfromtxt('snorri_6.0_EmgRectifyLowPass6_IMULowPass6_Y.txt', delimiter='');
+#os.chdir("D:\\data_aquisition\\snorri")
 #
-#X_5 = genfromtxt('snorri_6.6_EmgRectifyLowPass6_IMULowPass6_X.txt', delimiter='');
-#y_5 = genfromtxt('snorri_6.6_EmgRectifyLowPass6_IMULowPass6_Y.txt', delimiter='');
 #
-
-
-## subject macus
-
-#X_1 = genfromtxt('Marcus_6.4_X.txt', delimiter='');
-#y_1 = genfromtxt('Marcus_6.4_Y.txt', delimiter='');
 #
-#X_2 = genfromtxt('Marcus_5.8_X.txt', delimiter='');
-#y_2 = genfromtxt('Marcus_5.8_Y.txt', delimiter='');
+#X_train = np.concatenate((X1,X2,X3,X4,X5))
+#y_train = np.concatenate((y1,y2,y3,y4,y5))
+##
+#X_test = X6
+#y_test = y6
 #
-#X_3 = genfromtxt('Marcus_5.2_X.txt', delimiter='');
-#y_3 = genfromtxt('Marcus_5.2_Y.txt', delimiter='');
-#
-#X_4 = genfromtxt('Marcus_4.6_X.txt', delimiter='');
-#y_4 = genfromtxt('Marcus_4.6_Y.txt', delimiter='');
-#
-#X_5 = genfromtxt('Marcus_4.0_X.txt', delimiter='');
-#y_5 = genfromtxt('Marcus_4.0_Y.txt', delimiter='');
-#
-#X = np.concatenate((X_1,X_2,X_3,X_4,X_5))
-#y = np.concatenate((y_1,y_2,y_3,y_4,y_5))
+#X_train = X_train[:,8:]
+#X_test = X_test[:,8:]
+#X_train = make_matrix_7by9(X_train)
+#X_test = make_matrix_7by9(X_test)
+#y_train = np.subtract(y_train,1)
+#y_test = np.subtract(y_test,1)
 
 
 
-
-#X = genfromtxt('Marcus_6.4_X.txt', delimiter='');
-#y = genfromtxt('Marcus_6.4_Y.txt', delimiter='');
-
-
-
-#X_train = np.concatenate((X_1,X_2,X_3,X_4))
-#y_train = np.concatenate((y_1,y_2,y_3,y_4))
-#
-#X_test = X_5
-#y_test = y_5
 #
 #X_train = X_train[:,8:62]
 #X_test = X_test[:,8:62]
@@ -80,15 +65,21 @@ import time
 #X = X[:,8:]  # selecting IMU 9-14
 
 
-X = genfromtxt('yixing_5.5_X.txt', delimiter='');
-y = genfromtxt('yixing_5.5_Y.txt', delimiter='');
+
+
+
+X,y= fetchDataset('gunnar_4.2')
 
 X = X[:,8:];
 
 X = make_matrix_7by9(X)
 y = np.subtract(y,1)
-X_train, X_test, y_train, y_test = train_test_split(X, y,test_size= 0.3,random_state=0)
 
+
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y,test_size= 0.3,random_state=0)
+#
 
 #X_train = X[:7000,:,:]
 #X_test = X[7000:,:,:]
@@ -131,7 +122,8 @@ Y_test = np_utils.to_categorical(y_test, nb_classes)
 
 
 
-model,history  = CNN(X_train,Y_train,X_test,Y_test)
+#model,history  = CNN(X_train,Y_train,X_test,Y_test)
+model = load_model('best_model.h5')
 
 score = model.evaluate(X_test, Y_test, verbose=0)
 
@@ -163,19 +155,38 @@ cnf_matrix = confusion_matrix(y_test, y_pred)
 cnf_matrix_norm = cnf_matrix.astype('float') / cnf_matrix.sum(axis=1)[:, np.newaxis]
 np.set_printoptions(precision=2)
 
+
+
+
+
+
 # Plot non-normalized confusion matrix
+
+
+
 
 plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=class_names,
                       title='Confusion matrix, without normalization')
 
-plt.savefig('Confusion matrix, without normalization',dpi = 1200)
+
+
+
+
+
+
+
+#plt.savefig('Confusion matrix, without normalization',dpi = 1200)
 
 # Plot normalized confusion matrix
+
 plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,
-                      title='Normalized confusion matrix')
-plt.savefig('Normalized confusion matrix',dpi = 1200)
+                      title='Subject 1 (4.2km/h)')
+plt.savefig('gunnar_4.2_confusion_matrix.png',dpi = 400)
+
+
+
 plt.show()
 
 
@@ -184,12 +195,20 @@ plt.show()
 #plot bar_accuracy
 
 CNN_acc = np.array([score[1],cnf_matrix_norm[0,0],cnf_matrix_norm[1,1],cnf_matrix_norm[2,2],cnf_matrix_norm[3,3],cnf_matrix_norm[4,4]])
-bar_accuracy(CNN_acc)
+
+#CNN_onevsRest=np.concatenate((CNN_onevsRest,CNN_acc),axis=0)
+
+
+#bar_accuracy(CNN_acc)
+
+
+'''
 
 # plot roc curve
 
-plot_roc(model,nb_classes,X_test,Y_test)
+#plot_roc(model,nb_classes,X_test,Y_test)
 
 #plot loss and accuracy on training and validation data
 
 plot_loss_and_acc(history)
+'''

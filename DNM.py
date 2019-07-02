@@ -18,12 +18,15 @@ from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
 
+from numpy import array
+from keras.utils import np_utils
+
 
 def CNN(X_train,Y_train,X_test,Y_test):
     
     batch_size = 32
     nb_classes = 5
-    nb_epoch = 50
+    nb_epoch = 30
     
     # input image dimensions
     img_rows, img_cols = 7,9
@@ -104,3 +107,47 @@ def LSTM_model(X_train,Y_train):
     model.fit(X_train, Y_train, batch_size=batch_size, epochs=epochs)
     return model
 
+
+# split a multivariate sequence into samples
+def split_sequences(sequences, n_steps):
+	X, y = list(), list()
+	for i in range(len(sequences)):
+		# find the end of this pattern
+		end_ix = i + n_steps
+		# check if we are beyond the dataset
+		if end_ix > len(sequences):
+			break
+		# gather input and output parts of the pattern
+		seq_x, seq_y = sequences[i:end_ix, :-1], sequences[end_ix-1, -1]
+		X.append(seq_x)
+		y.append(seq_y)
+	return array(X), array(y)
+
+
+
+def LSTM1(X_train,Y_train,n_steps,nb_classes):
+    # choose a number of time steps
+    nb_epoch=100
+
+    # the dataset knows the number of features, e.g. 2
+    n_features = X_train.shape[2]
+    # define model
+    model = Sequential()
+    model.add(LSTM(50, activation='relu', input_shape=(n_steps, n_features)))
+#    model.add(Dense(1)) # dense 1 for 'mse' loss
+    model.add(Dense(nb_classes))
+    model.add(Activation('softmax'))
+    opt = optimizers.Nadam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, schedule_decay=0.004)
+ #   model.compile(optimizer='adam', loss='mse') 
+    model.compile(loss='categorical_crossentropy',
+                  optimizer= opt,
+                  metrics=['accuracy'])
+    # simple early stopping
+    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1,patience = 10)
+    mc = ModelCheckpoint('best_LSTM_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
+
+    # fit model
+#   model.fit(X_train, Y_train, epochs=20, verbose=1)
+    model.fit(X_train, Y_train,validation_split=0.2, epochs=nb_epoch,verbose=0,callbacks=[es,mc])
+    
+    return model
