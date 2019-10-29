@@ -20,16 +20,17 @@ from keras.models import load_model
 
 from numpy import array
 from keras.utils import np_utils
+from sklearn.utils import class_weight
+import numpy as np
 
-
-def CNN(X_train,Y_train,X_test,Y_test):
+def CNN(X_train,Y_train,X_test,Y_test,class_weights,subject):
     
-    batch_size = 32
+    batch_size = 64
     nb_classes = 5
-    nb_epoch = 30
+    nb_epoch = 100
     
     # input image dimensions
-    img_rows, img_cols = 7,9
+    img_rows, img_cols = 4,3
     # number of convolutional filters to use
     nb_filters = 8
     # size of pooling area for max pooling,default (2,2)
@@ -45,17 +46,17 @@ def CNN(X_train,Y_train,X_test,Y_test):
 #
     model.add(Conv2D(nb_filters, kernel_size,input_shape=(img_rows, img_cols, 1),padding='same'))
     model.add(Activation('relu'))
-    model.add(Conv2D(nb_filters, kernel_size))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=pool_size))
-    model.add(Dropout(0.25))
+#    model.add(Conv2D(nb_filters, kernel_size))
+#    model.add(Activation('relu'))
+#    model.add(MaxPooling2D(pool_size=pool_size))
+#    model.add(Dropout(0.25))
 
-    model.add(Conv2D(2*nb_filters, kernel_size,padding = 'same'))
-    model.add(Activation('relu'))
-    model.add(Conv2D(2*nb_filters, kernel_size,padding = 'same'))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=pool_size))
-    model.add(Dropout(0.25))
+#    model.add(Conv2D(2*nb_filters, kernel_size,padding = 'same'))
+#    model.add(Activation('relu'))
+#    model.add(Conv2D(2*nb_filters, kernel_size,padding = 'same'))
+#    model.add(Activation('relu'))
+#    model.add(MaxPooling2D(pool_size=pool_size))
+#    model.add(Dropout(0.25))
 
 
 
@@ -63,7 +64,7 @@ def CNN(X_train,Y_train,X_test,Y_test):
     model.add(Flatten())
     model.add(Dense(512))
     model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+#    model.add(Dropout(0.5))
     model.add(Dense(nb_classes))
     model.add(Activation('softmax'))
     
@@ -74,15 +75,55 @@ def CNN(X_train,Y_train,X_test,Y_test):
                   metrics=['accuracy'])
     
     # simple early stopping
-    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1,patience = 5)
-    mc = ModelCheckpoint('best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
+    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1,patience = 10)
+    mc = ModelCheckpoint(subject+'_best_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
     
     
+
     
-    history = model.fit(X_train, Y_train,validation_data=(X_test, Y_test), batch_size=batch_size, nb_epoch=nb_epoch,verbose=0,callbacks=[es,mc])
-    model = load_model('best_model.h5')
+    
+    history = model.fit(X_train, Y_train,validation_data=(X_test, Y_test), batch_size=batch_size, nb_epoch=nb_epoch,verbose=0,callbacks=[es,mc],class_weight=None)
+    model = load_model(subject+'_best_model.h5')
     
     return model, history
+
+
+def MLP_(X_train,Y_train,X_test,Y_test,class_weights,subject):
+    
+    batch_size = 20
+    nb_classes = 5
+    nb_epoch = 100
+    
+    
+    
+    # define model
+    model = Sequential()
+    model.add(Flatten())
+    model.add(Dense(512, activation='relu'))
+
+    #model.add(Dropout(0.5))
+    model.add(Dense(nb_classes))
+    model.add(Activation('softmax'))
+    
+    opt = optimizers.Nadam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=None, schedule_decay=0.004)
+    model.compile(loss='categorical_crossentropy',
+                  optimizer= opt,
+                  metrics=['accuracy'])
+    
+    # simple early stopping
+    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1,patience = 10)
+    mc = ModelCheckpoint(subject+'_best_MLP_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
+    
+
+    
+    history = model.fit(X_train, Y_train,validation_data=(X_test, Y_test), batch_size=batch_size, nb_epoch=nb_epoch,verbose=0,callbacks=[es,mc],class_weight=None)
+    model = load_model(subject+'_best_MLP_model.h5')
+    
+    
+    return model, history
+
+
+
 
 
 def LSTM_model(X_train,Y_train):
@@ -125,9 +166,9 @@ def split_sequences(sequences, n_steps):
 
 
 
-def LSTM1(X_train,Y_train,n_steps,nb_classes):
+def LSTM1(X_train,Y_train,n_steps,nb_classes,subject):
     # choose a number of time steps
-    nb_epoch=100
+    nb_epoch=30
 
     # the dataset knows the number of features, e.g. 2
     n_features = X_train.shape[2]
@@ -144,10 +185,25 @@ def LSTM1(X_train,Y_train,n_steps,nb_classes):
                   metrics=['accuracy'])
     # simple early stopping
     es = EarlyStopping(monitor='val_loss', mode='min', verbose=1,patience = 10)
-    mc = ModelCheckpoint('best_LSTM_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
+    mc = ModelCheckpoint(subject+'_best_LSTM_model.h5', monitor='val_acc', mode='max', verbose=1, save_best_only=True)
 
     # fit model
 #   model.fit(X_train, Y_train, epochs=20, verbose=1)
     model.fit(X_train, Y_train,validation_split=0.2, epochs=nb_epoch,verbose=0,callbacks=[es,mc])
     
     return model
+
+
+def feature_selection(X):
+    
+    #feature_ind = (53,51,49,44,42,40,35,26,24,22,17,8)
+    
+    feature_ind = (53,51,49)
+    
+    feature_selec = np.zeros((np.shape(X)[0],len(feature_ind)))
+    
+    for i, e in enumerate(feature_ind):
+        feature_selec[:,i]= X[:,e]
+    
+    
+    return feature_selec
