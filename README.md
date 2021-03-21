@@ -1,7 +1,7 @@
 # gait-recognition-DCNN
-gait recognition using Deep convolutional neural network
 
-Abstract: Gait phase recognition is of great importance in the development of assistance-as-needed
+
+Gait phase recognition is of great importance in the development of assistance-as-needed
 robotic devices, such as exoskeletons. In order for a powered exoskeleton with phase-based control
 to determine and provide proper assistance to the wearer during gait, the user’s current gait phase
 must first be identified accurately. Gait phase recognition can potentially be achieved through input
