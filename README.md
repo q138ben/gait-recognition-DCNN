@@ -12,3 +12,7 @@ sensor data is arranged in sequence. We propose a specialized DCNN to distinguis
 a gait cycle, based on IMU data and classified with foot switch information. The DCNN showed
 approximately 97% accuracy during an offline evaluation of gait phase recognition. Accuracy was
 highest in the swing phase and lowest in terminal stance.
+
+## The purpose of this repository
+
+The purpose of this repository was to demonstrate the labelling of the sensor data with corresponding gait phases, training with a CNN network, and cross validate the recognition accuracy.
