@@ -16,3 +16,7 @@ highest in the swing phase and lowest in terminal stance.
 ## The purpose of this repository
 
 The purpose of this repository was to demonstrate the labelling of the sensor data with corresponding gait phases, training with a CNN network, and cross validate the recognition accuracy.
+
+## Basic use
+
+run gait_phase_recognition.py
