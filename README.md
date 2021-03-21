@@ -1,4 +1,4 @@
-# gait-recognition-DCNN
+# gait-phase-recognition-DCNN
 
 
 Gait phase recognition is of great importance in the development of assistance-as-needed
